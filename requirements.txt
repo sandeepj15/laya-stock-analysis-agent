@@ -1,0 +1,19 @@
+# Core AI & Neural Engine
+laya>=0.3.20
+torch>=2.2.0
+transformers>=4.40.0
+safetensors>=0.4.0
+
+# Financial Data & Market Indicators
+tradingview-ta>=3.3.0
+yfinance>=0.2.38
+pandas>=2.0.0
+numpy>=1.24.0
+
+# Telegram Bot & Networking
+python-telegram-bot>=21.0
+requests>=2.31.0
+python-dotenv>=1.0.0
+
+# CLI & Progress
+tqdm>=4.66.0
