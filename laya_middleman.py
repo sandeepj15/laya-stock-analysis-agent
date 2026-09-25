@@ -444,7 +444,7 @@ def calculate_laya_composite_score(stock: Dict[str, Any], answers: Dict[str, Any
 
 def prioritize_candidate_pool(stocks: List[Dict[str, Any]], limit: int = 50) -> List[Dict[str, Any]]:
     """Prioritizes candidates so Laya evaluates bullish double-confirmed and strong momentum stocks first."""
-    if len(stocks) <= limit:
+    if limit is not None and limit > 0 and len(stocks) <= limit:
         return stocks
 
     def priority_score(s):
@@ -481,7 +481,9 @@ def prioritize_candidate_pool(stocks: List[Dict[str, Any]], limit: int = 50) -> 
         return score
 
     sorted_stocks = sorted(stocks, key=priority_score, reverse=True)
-    return sorted_stocks[:limit]
+    if limit is not None and limit > 0:
+        return sorted_stocks[:limit]
+    return sorted_stocks
 
 
 def run_laya_screening(input_file: str, output_file: str, top_n: int = 25, candidate_limit: int = 50, batch_size: int = 16, device: str = "cpu") -> List[Dict[str, Any]]:
