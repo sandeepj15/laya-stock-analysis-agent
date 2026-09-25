@@ -49,9 +49,8 @@ echo ""
 echo "--- 1. Multi-Timeframe Market Scan (1D & 1W Enriched Technicals & Fundamentals) ---"
 $PY ai_stock_agent_1d_1w.py
 
-echo ""
 echo "--- 2. Laya Neural Decision Engine (4-Dimensional Middle-Man Pre-Screening) ---"
-$PY laya_middleman.py --input stock_data_for_ai.json --output laya_screened_stocks.json --candidates 50 --top 25 --device cpu
+$PY laya_middleman.py --input stock_data_for_ai.json --output laya_screened_stocks.json --candidates ${CANDIDATE_LIMIT:-50} --top ${TOP_PICKS_LIMIT:-25} --device ${LAYA_DEVICE:-cpu}
 
 echo ""
 echo "--- 3. AI Deep Reasoning (Gemini via agy CLI) ---"

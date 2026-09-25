@@ -1,6 +1,7 @@
 # 🚀 Laya + Gemini Stock Intelligence Pipeline
 ### *Autonomous Multi-Timeframe Swing Trading & Decision System for Indian Equities (NSE)*
 
+[![GitHub Repo](https://img.shields.io/badge/GitHub-sandeepj15%2Flaya--stock--analysis--agent-blue?logo=github)](https://github.com/sandeepj15/laya-stock-analysis-agent)
 [![Python 3.10+](https://img.shields.io/badge/python-3.10+-blue.svg)](https://www.python.org/downloads/)
 [![Laya 0.3+](https://img.shields.io/badge/Laya-Neural%20Engine-purple.svg)](https://github.com/answerdotai)
 [![Gemini](https://img.shields.io/badge/Gemini-System%202%20Reasoning-orange.svg)](https://deepmind.google/technologies/gemini/)
@@ -23,7 +24,7 @@ flowchart TD
     end
 
     subgraph Stage2["2. Laya Neural Decision Engine (System 1)"]
-        E --> F["Candidate Prioritization (Top 50)"]
+        E --> F["Candidate Prioritization (Top 50 or All)"]
         F --> G["Semantic Translation Layer"]
         G --> H["Laya Agent (ModernBERT CPU Engine)"]
         H -->|Ranked Top Picks| I["laya_screened_stocks.json (Top 25)"]
@@ -80,7 +81,7 @@ flowchart TD
 ## 📂 Project Structure
 
 ```text
-laya-stock-intelligence/
+laya-stock-analysis-agent/
 ├── README.md                      # Complete local setup & project documentation
 ├── PROJECT_OVERVIEW.md            # In-depth architectural & benchmark presentation doc
 ├── requirements.txt               # Pinned Python package dependencies
@@ -93,8 +94,8 @@ laya-stock-intelligence/
 ├── toon_utils.py                  # Stage 3: TOON encoder / decoder utilities
 ├── process_and_send.py            # Stage 4: Telegram report processor & dispatcher
 │
-├── nse_symbols_cache.json         # Cached universe of 755 liquid NSE symbols
-└── fundamental_cache.json         # Local cache for Yahoo Finance fundamentals
+├── nse_symbols_cache.json         # Pre-cached universe of 755 liquid NSE symbols
+└── fundamental_cache.json         # Local cache for Yahoo Finance fundamentals (auto-generated)
 ```
 
 ---
@@ -103,8 +104,8 @@ laya-stock-intelligence/
 
 ### 1. Clone the Repository
 ```bash
-git clone https://github.com/your-username/laya-stock-intelligence.git
-cd laya-stock-intelligence
+git clone https://github.com/sandeepj15/laya-stock-analysis-agent.git
+cd laya-stock-analysis-agent
 ```
 
 ### 2. Set Up a Python Virtual Environment
@@ -145,8 +146,8 @@ TELEGRAM_CHANNEL_ID="-1001234567890"
 
 # Optional Runtime Tuning
 LAYA_DEVICE="cpu"
-CANDIDATE_LIMIT="50"
-TOP_PICKS_LIMIT="25"
+CANDIDATE_LIMIT="50"       # Set to "0" to evaluate all 260+ scanned candidates
+TOP_PICKS_LIMIT="25"       # Number of top shortlisted setups sent to Gemini
 ```
 
 #### How to get Telegram credentials:
@@ -192,6 +193,7 @@ python ai_stock_agent_1d_1w.py
 
 #### 2. Run Laya Neural Pre-Screening
 ```bash
+# Screen top 50 candidates
 python laya_middleman.py \
     --input stock_data_for_ai.json \
     --output laya_screened_stocks.json \
@@ -199,6 +201,9 @@ python laya_middleman.py \
     --top 25 \
     --batch-size 16 \
     --device cpu
+
+# Or screen ALL scanned candidates without cutoff:
+python laya_middleman.py --candidates 0 --top 25
 ```
 *Outputs: `laya_screened_stocks.json`.*
 
@@ -223,7 +228,7 @@ python process_and_send.py < ai_analysis_result.json
 | Stage | Operations | Typical Time | Optimization |
 |---|---|---|---|
 | **Market Scanner** | 755 symbols scanned (1D + 1W) | ~25–35s | ThreadPool concurrency & memory caching |
-| **Fundamentals Fetch** | Top 260 candidates | ~5–10s | Persistent JSON cache (`fundamental_cache.json`) |
+| **Fundamentals Fetch** | Top 260 candidates | ~5–10s | Persistent JSON cache (`fundamental_cache.json`, auto-generated) |
 | **Laya Neural Screening** | 50 candidates evaluated | ~80–110s | CPU vectorization, batch size 16 |
 | **Gemini Deep Reasoning** | 25 shortlisted setups | ~30–45s | TOON token compression (70% token savings) |
 | **Telegram Dispatch** | HTML table formatting & API | ~1–2s | Asynchronous Telegram Bot API |
@@ -237,7 +242,7 @@ python process_and_send.py < ai_analysis_result.json
 |---|---|---|---|
 | `--input` | `laya_middleman.py` | `stock_data_for_ai.json` | Path to scanner output JSON |
 | `--output` | `laya_middleman.py` | `laya_screened_stocks.json` | Destination path for Laya shortlist |
-| `--candidates` | `laya_middleman.py` | `50` | Number of top momentum candidates to evaluate |
+| `--candidates` | `laya_middleman.py` | `50` | Number of top momentum candidates to evaluate (set to `0` to evaluate all scanned stocks) |
 | `--top` | `laya_middleman.py` | `25` | Number of top setups to shortlist for Gemini |
 | `--device` | `laya_middleman.py` | `cpu` | Hardware acceleration device (`cpu`, `mps`, `cuda`) |
 | `--batch-size` | `laya_middleman.py` | `16` | Neural evaluation batch size |
@@ -245,6 +250,9 @@ python process_and_send.py < ai_analysis_result.json
 ---
 
 ## ❓ Frequently Asked Questions (FAQ)
+
+#### Q: Can I evaluate all 260+ scanned candidates instead of just the top 50?
+Yes! Set `CANDIDATE_LIMIT="0"` in `.env` or pass `--candidates 0` via the CLI. The default is set to 50 for quick 2–3 minute turnaround, but setting it to 0 processes the entire scanned universe.
 
 #### Q: Why is RSI excluded from trade decisions?
 During strong institutional momentum expansions and breakouts, RSI frequently enters "overbought" territory (> 70) and stays there as the stock doubles. Traditional screeners that sell on overbought RSI miss the best swing trades. This pipeline relies on **bullish EMA stacks**, **VWMA distance**, **MACD histogram expansion**, and **+DI buyer dominance** instead.
